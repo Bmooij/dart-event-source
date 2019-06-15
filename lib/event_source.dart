@@ -65,6 +65,9 @@ class EventSource {
   /// The function used to create HttpClient when connecting.
   HttpClientFactory clientFactory;
 
+  /// Additional HTTP headers
+  Map<String, String> headers;
+
   /// The URL of the EventSource endpoint.
   final Uri url;
 
@@ -78,10 +81,12 @@ class EventSource {
   EventSource(this.url,
       {this.clientFactory,
       this.initialReconnectDelay = const Duration(seconds: 1),
-      this.maxReconnectDelay = const Duration(minutes: 1)})
+      this.maxReconnectDelay = const Duration(minutes: 1),
+      this.headers = Map()})
       : assert(url != null),
         assert(initialReconnectDelay != null),
-        assert(maxReconnectDelay != null) {
+        assert(maxReconnectDelay != null),
+        assert(headers != null) {
     if (clientFactory == null) {
       clientFactory = () {
         return HttpClient();
@@ -114,6 +119,9 @@ class EventSource {
     if (_lastEventID != null) {
       request.headers.set('Last-Event-ID', _lastEventID);
     }
+    headers.forEach((key, value) {
+      request.headers.add(key, value);
+    });
 
     final response = await request.close();
     if (response.statusCode == HttpStatus.noContent) {
