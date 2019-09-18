@@ -2,6 +2,7 @@ import 'dart:async' show Future, Stream, StreamController, Timer;
 import 'dart:convert' show LineSplitter, utf8;
 import 'dart:io' show HttpClient, HttpStatus;
 import 'dart:math' show Random;
+import 'package:flutter/foundation.dart';
 
 class MessageEvent {
   final String name;
@@ -13,7 +14,7 @@ class MessageEvent {
 typedef HttpClientFactory = HttpClient Function();
 
 /// A client for server-sent events. An EventSource instance opens a persistent connection to an HTTP server, which sends events in `text/event-stream` format.
-class EventSource {
+class EventSource with ChangeNotifier {
   /// Event name for a block in case no `event:` line was seen.
   static const _DEFAULT_EVENT_NAME = 'message';
 
@@ -39,7 +40,16 @@ class EventSource {
   StreamController<MessageEvent> _streamController;
 
   /// Mutable readyState.
-  int _readyState = CLOSED;
+  int __readyState = CLOSED;
+
+  int get _readyState => __readyState;
+  int set _readyState(newState) {
+    var oldState = __readyState;
+    __readyState = newState;
+    if (oldState != newState) {
+      notifyListeners();
+    }
+  }
 
   /// Time to wait for reconnect after a successful connection.
   Duration initialReconnectDelay;
