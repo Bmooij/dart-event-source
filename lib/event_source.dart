@@ -5,6 +5,7 @@ import 'dart:math' show Random;
 import 'package:flutter/foundation.dart';
 
 class MessageEvent {
+  final int id;
   final String name;
   final String data;
 
@@ -198,6 +199,7 @@ class EventSource with ChangeNotifier {
       }
 
       _streamController.add(MessageEvent(
+	    id: _lastEventID,
         name: _nextEventName ?? _DEFAULT_EVENT_NAME,
         data: _nextData,
       ));
