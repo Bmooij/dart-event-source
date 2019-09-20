@@ -5,7 +5,7 @@ import 'dart:math' show Random;
 import 'package:flutter/foundation.dart';
 
 class MessageEvent {
-  final int id;
+  final String id;
   final String name;
   final String data;
 
