@@ -4,7 +4,7 @@ import 'dart:io' show HttpClient, HttpStatus;
 import 'dart:math' show Random;
 
 class MessageEvent {
-  final int id;
+  final String id;
   final String name;
   final String data;
 
