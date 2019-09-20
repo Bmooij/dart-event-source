@@ -4,6 +4,7 @@ import 'dart:io' show HttpClient, HttpStatus;
 import 'dart:math' show Random;
 
 class MessageEvent {
+  final int id;
   final String name;
   final String data;
 
@@ -180,6 +181,7 @@ class EventSource {
       }
 
       _streamController.add(MessageEvent(
+	    id: _lastEventID,
         name: _nextEventName ?? _DEFAULT_EVENT_NAME,
         data: _nextData,
       ));
