@@ -46,6 +46,9 @@ class EventSource {
 
   /// Maximum time to wait before reconnecting.
   final Duration maxReconnectDelay;
+  
+  /// Time to wait between data, reconnect on timeout
+  final Duration timeout;
 
   /// Time to wait before next reconnection, null represents initial timout.
   Duration _reconnectDelay;
@@ -78,7 +81,8 @@ class EventSource {
   EventSource(this.url,
       {this.clientFactory,
       this.initialReconnectDelay = const Duration(seconds: 1),
-      this.maxReconnectDelay = const Duration(minutes: 1)})
+      this.maxReconnectDelay = const Duration(minutes: 1),
+	  this.timeout = const Duration(seconds: 30)})
       : assert(url != null),
         assert(initialReconnectDelay != null),
         assert(maxReconnectDelay != null) {
@@ -133,6 +137,7 @@ class EventSource {
     var reconnectOnce = _onceFunc(_reconnect);
     utf8.decoder
         .bind(response)
+		.timeout(timeout)
         .transform(LineSplitter())
         .listen(_onMessage, onDone: reconnectOnce, onError: (_) {
       reconnectOnce();
