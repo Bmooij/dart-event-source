@@ -9,7 +9,7 @@ class MessageEvent {
   final String name;
   final String data;
 
-  MessageEvent({this.name, this.data});
+  MessageEvent({this.id, this.name, this.data});
 }
 
 typedef HttpClientFactory = HttpClient Function();
@@ -184,7 +184,7 @@ class EventSource with ChangeNotifier {
     _reconnectDelay ??= initialReconnectDelay;
     _reconnecting = Timer(_reconnectDelay, () {
       _reconnecting = null;
-      if (_readyState == CLOSED) {
+      if (_readyState == CLOSED && _streamController.hasListener) {
         open().catchError((err) {
           _reconnect();
         });
