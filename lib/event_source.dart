@@ -82,7 +82,7 @@ class EventSource {
       {this.clientFactory,
       this.initialReconnectDelay = const Duration(seconds: 1),
       this.maxReconnectDelay = const Duration(minutes: 1),
-      this.headers = const Map()})
+      this.headers = const {}})
       : assert(url != null),
         assert(initialReconnectDelay != null),
         assert(maxReconnectDelay != null),
