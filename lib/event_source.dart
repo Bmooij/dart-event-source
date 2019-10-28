@@ -97,7 +97,7 @@ class EventSource with ChangeNotifier {
       this.initialReconnectDelay = const Duration(seconds: 1),
       this.maxReconnectDelay = const Duration(minutes: 1),
 	  this.timeout = const Duration(seconds: 30),
-      this.headers = Map()})
+      this.headers = const Map()})
       : assert(url != null),
         assert(initialReconnectDelay != null),
         assert(maxReconnectDelay != null),
