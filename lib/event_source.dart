@@ -1,7 +1,7 @@
 import 'dart:async' show Future, Stream, StreamController, Timer;
 import 'dart:convert' show LineSplitter, utf8;
-import 'dart:io' show HttpClient, HttpStatus;
 import 'dart:math' show Random;
+import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 
 class MessageEvent {
@@ -12,7 +12,7 @@ class MessageEvent {
   MessageEvent({this.id, this.name, this.data});
 }
 
-typedef HttpClientFactory = HttpClient Function();
+typedef HttpClientFactory = http.Client Function();
 
 /// A client for server-sent events. An EventSource instance opens a persistent connection to an HTTP server, which sends events in `text/event-stream` format.
 class EventSource with ChangeNotifier {
@@ -32,7 +32,7 @@ class EventSource with ChangeNotifier {
   static const int CLOSED = 2;
 
   /// Client used for the request.
-  HttpClient _client;
+  http.Client _client;
 
   /// Random number sequence for exponential backoff.
   final Random _random = Random();
@@ -104,7 +104,7 @@ class EventSource with ChangeNotifier {
         assert(headers != null) {
     if (clientFactory == null) {
       clientFactory = () {
-        return HttpClient();
+        return http.Client();
       };
     }
     _streamController = StreamController.broadcast(
@@ -129,21 +129,20 @@ class EventSource with ChangeNotifier {
 
     _client = clientFactory();
 
-    final request = await _client.getUrl(url);
-    request.headers.set('Accept', _MIME_TYPE);
+    var request = http.Request('GET', url);
+    request.headers["Cache-Control"] = "no-cache";
+    request.headers['Accept'] = _MIME_TYPE;
     if (_lastEventID != null) {
-      request.headers.set('Last-Event-ID', _lastEventID);
+      request.headers['Last-Event-ID'] = _lastEventID;
     }
-    headers.forEach((key, value) {
-      request.headers.add(key, value);
-    });
+    request.headers.addAll(headers);
 
-    final response = await request.close();
-    if (response.statusCode == HttpStatus.noContent) {
+    final response = await _client.send(request);
+    if (response.statusCode == 204) {
       close();
       return;
     }
-    if (response.statusCode != HttpStatus.ok) {
+    if (response.statusCode != 200) {
       _reconnect();
       return;
     }
@@ -155,8 +154,8 @@ class EventSource with ChangeNotifier {
     // is only called once per connection.
     var reconnectOnce = _onceFunc(_reconnect);
     utf8.decoder
-        .bind(response)
-		.timeout(timeout)
+        .bind(response.stream)
+		    .timeout(timeout)
         .transform(LineSplitter())
         .listen(_onMessage, onDone: reconnectOnce, onError: (_) {
       reconnectOnce();
@@ -172,7 +171,7 @@ class EventSource with ChangeNotifier {
     }
 
     if (_readyState != CLOSED) {
-      _client.close(force: true);
+      _client.close();
       _client = null;
       _readyState = CLOSED;
     }
